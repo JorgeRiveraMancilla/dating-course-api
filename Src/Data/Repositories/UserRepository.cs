@@ -126,7 +126,7 @@ namespace dating_course_api.Src.Data.Repositories
                 .ToListAsync();
         }
 
-        public void Update(UpdateUserDto updateUserDto)
+        public void UpdateUser(UpdateUserDto updateUserDto)
         {
             var user = _mapper.Map<User>(updateUserDto);
             _dataContext.Entry(user).State = EntityState.Modified;
