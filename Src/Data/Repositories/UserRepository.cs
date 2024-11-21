@@ -114,5 +114,10 @@ namespace dating_course_api.Src.Data.Repositories
             var user = _mapper.Map<User>(updateUserDto);
             _dataContext.Entry(user).State = EntityState.Modified;
         }
+
+        public async Task<bool> UserExistsByEmailAsync(string email)
+        {
+            return await _dataContext.Users.AnyAsync(u => u.Email == email);
+        }
     }
 }
