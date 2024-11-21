@@ -5,10 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace dating_course_api.Src.Controllers
 {
-    public class AccountController(IUserRepository userRepository, ITokenService tokenService)
+    public class AccountController(IUnitOfWork unitOfWork, ITokenService tokenService)
         : BaseApiController
     {
-        private readonly IUserRepository _userRepository = userRepository;
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly ITokenService _tokenService = tokenService;
 
         [HttpPost("register")]
@@ -17,11 +17,14 @@ namespace dating_course_api.Src.Controllers
             if (registerDto.BirthDate.CalculateAge() < 18)
                 return BadRequest("You must be at least 18 years old to register");
 
-            var exists = await _userRepository.UserExistsByEmailAsync(registerDto.Email);
+            var exists = await _unitOfWork.UserRepository.UserExistsByEmailAsync(registerDto.Email);
             if (exists)
                 return Conflict("Email is already in use");
 
-            var result = await _userRepository.CreateUserAsync(registerDto, registerDto.Password);
+            var result = await _unitOfWork.UserRepository.CreateUserAsync(
+                registerDto,
+                registerDto.Password
+            );
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
 
@@ -31,11 +34,14 @@ namespace dating_course_api.Src.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<AuthDto>> Login(LoginDto loginDto)
         {
-            var user = await _userRepository.GetUserByEmailAsync(loginDto.Email);
+            var user = await _unitOfWork.UserRepository.GetUserByEmailAsync(loginDto.Email);
             if (user is null)
                 return Unauthorized("Invalid credentials");
 
-            var result = await _userRepository.CheckPasswordAsync(user.Id, loginDto.Password);
+            var result = await _unitOfWork.UserRepository.CheckPasswordAsync(
+                user.Id,
+                loginDto.Password
+            );
             if (!result)
                 return Unauthorized("Invalid credentials");
 
