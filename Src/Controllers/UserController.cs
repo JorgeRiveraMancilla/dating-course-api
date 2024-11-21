@@ -68,7 +68,7 @@ namespace dating_course_api.Src.Controllers
         }
 
         [HttpPost("add-photo")]
-        public async Task<ActionResult<PhotoDto>> AddPhoto(IFormFile file)
+        public async Task<ActionResult<PhotoDto>> AddPhoto([FromForm] IFormFile file)
         {
             var userId = User.GetUserId();
             var user = await _unitOfWork.UserRepository.GetUserByIdAsync(userId);
@@ -101,7 +101,7 @@ namespace dating_course_api.Src.Controllers
         }
 
         [HttpPut("set-main-photo/{photoId:int}")]
-        public async Task<ActionResult> SetMainPhoto(int photoId)
+        public async Task<ActionResult> SetMainPhoto([FromRoute] int photoId)
         {
             var userId = User.GetUserId();
             var user = await _unitOfWork.UserRepository.GetUserByIdAsync(userId);
@@ -133,7 +133,7 @@ namespace dating_course_api.Src.Controllers
         }
 
         [HttpDelete("delete-photo/{photoId:int}")]
-        public async Task<ActionResult> DeletePhoto(int photoId)
+        public async Task<ActionResult> DeletePhoto([FromRoute] int photoId)
         {
             var userId = User.GetUserId();
             var user = await _unitOfWork.UserRepository.GetUserByIdAsync(userId);
