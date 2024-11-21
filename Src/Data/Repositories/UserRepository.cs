@@ -1,5 +1,6 @@
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using dating_course_api.Src.DTOs.Account;
 using dating_course_api.Src.DTOs.Member;
 using dating_course_api.Src.DTOs.User;
 using dating_course_api.Src.Entities;
@@ -19,6 +20,22 @@ namespace dating_course_api.Src.Data.Repositories
         private readonly DataContext _dataContext = dataContext;
         private readonly UserManager<User> _userManager = userManager;
         private readonly IMapper _mapper = mapper;
+
+        public async Task<bool> CheckPasswordAsync(int userId, string password)
+        {
+            var user =
+                await _userManager.FindByIdAsync(userId.ToString())
+                ?? throw new Exception("User not found");
+            return await _userManager.CheckPasswordAsync(user, password);
+        }
+
+        public async Task<IdentityResult> CreateUserAsync(RegisterDto registerDto, string password)
+        {
+            var user = _mapper.Map<User>(registerDto);
+            user.UserName = user.UserName?.ToLower();
+
+            return await _userManager.CreateAsync(user, password);
+        }
 
         public async Task<MemberDto?> GetMemberByEmailAsync(string email, bool isCurrentUser)
         {
