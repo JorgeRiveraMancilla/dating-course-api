@@ -30,5 +30,19 @@ namespace dating_course_api.Src.Controllers
 
             return Ok(users);
         }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<MemberDto>> GetUser(int id)
+        {
+            var userId = User.GetUserId();
+            var isCurrentUser = userId == id;
+
+            var user = await _unitOfWork.UserRepository.GetMemberByIdAsync(id, isCurrentUser);
+
+            if (user is null)
+                return NotFound();
+
+            return user;
+        }
     }
 }
