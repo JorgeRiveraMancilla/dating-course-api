@@ -6,7 +6,7 @@ namespace dating_course_api.Src.Interfaces
 {
     public interface ILikeRepository
     {
-        Task AddLikeAsync(CreateLikeDto createLikeDto);
+        Task CreateLikeAsync(CreateLikeDto createLikeDto);
         Task DeleteLikeAsync(LikeDto likeDto);
         Task<IEnumerable<int>> GetCurrentUserLikeIdsAsync(int currentUserId);
         Task<LikeDto?> GetUserLikeAsync(int sourceUserId, int targetUserId);

@@ -1,6 +1,7 @@
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using dating_course_api.Src.DTOs.Photo;
+using dating_course_api.Src.Entities;
 using dating_course_api.Src.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +11,12 @@ namespace dating_course_api.Src.Data.Repositories
     {
         private readonly DataContext _dataContext = dataContext;
         private readonly IMapper _mapper = mapper;
+
+        public async Task CreatePhotoAsync(CreatePhotoDto createPhotoDto)
+        {
+            var photo = _mapper.Map<Photo>(createPhotoDto);
+            await _dataContext.Photos.AddAsync(photo);
+        }
 
         public async Task<PhotoDto?> GetPhotoByIdAsync(int id)
         {

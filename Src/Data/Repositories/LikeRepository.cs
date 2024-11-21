@@ -14,7 +14,7 @@ namespace dating_course_api.Src.Data.Repositories
         private readonly DataContext _dataContext = dataContext;
         private readonly IMapper _mapper = mapper;
 
-        public async Task AddLikeAsync(CreateLikeDto createLikeDto)
+        public async Task CreateLikeAsync(CreateLikeDto createLikeDto)
         {
             var like = _mapper.Map<Like>(createLikeDto);
             await _dataContext.Likes.AddAsync(like);

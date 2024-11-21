@@ -15,16 +15,16 @@ namespace dating_course_api.Src.Data.Repositories
         private readonly DataContext _dataContext = dataContext;
         private readonly IMapper _mapper = mapper;
 
-        public void AddGroup(CreateGroupDto createGroupDto)
+        public async Task CreateGroupAsync(CreateGroupDto createGroupDto)
         {
             var group = _mapper.Map<Group>(createGroupDto);
-            _dataContext.Groups.Add(group);
+            await _dataContext.Groups.AddAsync(group);
         }
 
-        public void AddMessage(CreateMessageDto createMessageDto)
+        public async Task CreateMessageAsync(CreateMessageDto createMessageDto)
         {
             var message = _mapper.Map<Message>(createMessageDto);
-            _dataContext.Messages.Add(message);
+            await _dataContext.Messages.AddAsync(message);
         }
 
         public async Task DeleteMessageAsync(MessageDto messageDto)
