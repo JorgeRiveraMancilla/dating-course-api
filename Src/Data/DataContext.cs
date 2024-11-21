@@ -27,6 +27,12 @@ namespace dating_course_api.Src.Data
         {
             base.OnModelCreating(builder);
 
+            builder.Entity<User>(entity =>
+            {
+                entity.HasIndex(u => u.Email).IsUnique();
+                entity.HasIndex(u => u.UserName).IsUnique(false);
+            });
+
             builder
                 .Entity<User>()
                 .HasMany(ur => ur.UserRoles)
