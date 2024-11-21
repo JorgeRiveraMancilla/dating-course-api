@@ -126,10 +126,40 @@ namespace dating_course_api.Src.Controllers
 
             await _unitOfWork.PhotoRepository.SetPhotoIsMainAsync(userId, photoId, true);
 
-            if (await unitOfWork.Complete())
+            if (await _unitOfWork.Complete())
                 return NoContent();
 
             return BadRequest("Problem setting main photo");
+        }
+
+        [HttpDelete("delete-photo/{photoId:int}")]
+        public async Task<ActionResult> DeletePhoto(int photoId)
+        {
+            var userId = User.GetUserId();
+            var user = await _unitOfWork.UserRepository.GetUserByIdAsync(userId);
+
+            if (user is null)
+                return BadRequest("User not found");
+
+            var photo = await _unitOfWork.PhotoRepository.GetPhotoByIdAsync(photoId);
+
+            if (photo is null)
+                return BadRequest("Photo not found");
+            else if (photo.UserId != userId)
+                return Unauthorized();
+            else if (photo.IsMain)
+                return BadRequest("You cannot delete your main photo");
+
+            var result = await _photoService.DeletePhotoAsync(photo.PublicId);
+            if (result.Error is not null)
+                return BadRequest(result.Error.Message);
+
+            await _unitOfWork.PhotoRepository.DelePhotoAsync(photo.Id);
+
+            if (await _unitOfWork.Complete())
+                return Ok();
+
+            return BadRequest("Problem deleting photo");
         }
     }
 }
