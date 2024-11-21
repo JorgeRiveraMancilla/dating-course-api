@@ -3,10 +3,12 @@ using dating_course_api.Src.DTOs.Member;
 using dating_course_api.Src.Extensions;
 using dating_course_api.Src.Helpers.Pagination;
 using dating_course_api.Src.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace dating_course_api.Src.Controllers
 {
+    [Authorize]
     public class LikeController(IUnitOfWork unitOfWork) : BaseApiController
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
