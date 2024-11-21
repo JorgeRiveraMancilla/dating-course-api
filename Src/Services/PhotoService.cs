@@ -21,7 +21,7 @@ namespace dating_course_api.Src.Services
             _cloudinary = new Cloudinary(acc);
         }
 
-        public async Task<ImageUploadResult> AddPhotoAsync(IFormFile file)
+        public async Task<ImageUploadResult> CreatePhotoAsync(IFormFile file)
         {
             var uploadResult = new ImageUploadResult();
             if (file.Length > 0)
