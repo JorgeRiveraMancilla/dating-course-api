@@ -1,5 +1,7 @@
 using dating_course_api.Src.DTOs.Like;
+using dating_course_api.Src.DTOs.Member;
 using dating_course_api.Src.Extensions;
+using dating_course_api.Src.Helpers.Pagination;
 using dating_course_api.Src.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -48,6 +50,19 @@ namespace dating_course_api.Src.Controllers
             var likeIds = await _unitOfWork.LikeRepository.GetCurrentUserLikeIdsAsync(userId);
 
             return Ok(likeIds);
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<MemberDto>>> GetUserLikes(
+            [FromQuery] LikeParams likesParams
+        )
+        {
+            likesParams.UserId = User.GetUserId();
+            var users = await _unitOfWork.LikeRepository.GetUserLikesAsync(likesParams);
+
+            Response.AddPaginationHeader(users);
+
+            return Ok(users);
         }
     }
 }
