@@ -27,5 +27,27 @@ namespace dating_course_api.Src.Controllers
 
             return Ok();
         }
+
+        [HttpPost("login")]
+        public async Task<ActionResult<AuthDto>> Login(LoginDto loginDto)
+        {
+            var user = await _userRepository.GetUserByEmailAsync(loginDto.Email);
+            if (user is null)
+                return Unauthorized("Invalid credentials");
+
+            var result = await _userRepository.CheckPasswordAsync(user.Id, loginDto.Password);
+            if (!result)
+                return Unauthorized("Invalid credentials");
+
+            var token = _tokenService.CreateToken(user.Id, user.UserName);
+            var auth = new AuthDto
+            {
+                UserId = user.Id,
+                UserName = user.UserName,
+                Token = token
+            };
+
+            return Ok(auth);
+        }
     }
 }
