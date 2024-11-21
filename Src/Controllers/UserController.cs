@@ -47,7 +47,7 @@ namespace dating_course_api.Src.Controllers
             return user;
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<ActionResult> UpdateUser(
             [FromRoute] int id,
             [FromBody] MemberUpdateDto memberUpdateDto
