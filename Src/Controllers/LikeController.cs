@@ -40,5 +40,14 @@ namespace dating_course_api.Src.Controllers
 
             return BadRequest("Failed to update like");
         }
+
+        [HttpGet("list")]
+        public async Task<ActionResult<IEnumerable<int>>> GetCurrentUserLikeIds()
+        {
+            var userId = User.GetUserId();
+            var likeIds = await _unitOfWork.LikeRepository.GetCurrentUserLikeIdsAsync(userId);
+
+            return Ok(likeIds);
+        }
     }
 }
