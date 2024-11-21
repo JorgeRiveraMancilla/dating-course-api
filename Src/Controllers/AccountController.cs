@@ -12,7 +12,7 @@ namespace dating_course_api.Src.Controllers
         private readonly ITokenService _tokenService = tokenService;
 
         [HttpPost("register")]
-        public async Task<ActionResult> Register(RegisterDto registerDto)
+        public async Task<ActionResult> Register([FromBody] RegisterDto registerDto)
         {
             if (registerDto.BirthDate.CalculateAge() < 18)
                 return BadRequest("You must be at least 18 years old to register");
@@ -32,7 +32,7 @@ namespace dating_course_api.Src.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<AuthDto>> Login(LoginDto loginDto)
+        public async Task<ActionResult<AuthDto>> Login([FromBody] LoginDto loginDto)
         {
             var user = await _unitOfWork.UserRepository.GetUserByEmailAsync(loginDto.Email);
             if (user is null)
