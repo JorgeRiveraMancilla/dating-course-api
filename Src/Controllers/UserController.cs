@@ -99,5 +99,37 @@ namespace dating_course_api.Src.Controllers
 
             return BadRequest("Problem adding photo");
         }
+
+        [HttpPut("set-main-photo/{photoId:int}")]
+        public async Task<ActionResult> SetMainPhoto(int photoId)
+        {
+            var userId = User.GetUserId();
+            var user = await _unitOfWork.UserRepository.GetUserByIdAsync(userId);
+
+            if (user is null)
+                return NotFound();
+
+            var photo = await _unitOfWork.PhotoRepository.GetPhotoByIdAsync(photoId);
+            if (photo is null)
+                return NotFound();
+
+            if (photo.UserId != userId)
+                return BadRequest("You cannot set this photo as main");
+
+            var mainPhoto = await _unitOfWork.PhotoRepository.GetMainPhotoByUserIdAsync(userId);
+
+            if (mainPhoto is not null && mainPhoto.Id == photoId)
+                return NoContent();
+
+            if (mainPhoto is not null)
+                await _unitOfWork.PhotoRepository.SetPhotoIsMainAsync(userId, mainPhoto.Id, false);
+
+            await _unitOfWork.PhotoRepository.SetPhotoIsMainAsync(userId, photoId, true);
+
+            if (await unitOfWork.Complete())
+                return NoContent();
+
+            return BadRequest("Problem setting main photo");
+        }
     }
 }

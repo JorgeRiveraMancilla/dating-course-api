@@ -18,6 +18,14 @@ namespace dating_course_api.Src.Data.Repositories
             await _dataContext.Photos.AddAsync(photo);
         }
 
+        public async Task<PhotoDto?> GetMainPhotoByUserIdAsync(int userId)
+        {
+            return await _dataContext
+                .Photos.Where(p => p.UserId == userId && p.IsMain)
+                .ProjectTo<PhotoDto>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<PhotoDto?> GetPhotoByIdAsync(int id)
         {
             return await _dataContext
@@ -48,6 +56,24 @@ namespace dating_course_api.Src.Data.Repositories
                 ?? throw new Exception("Photo not found");
 
             _dataContext.Photos.Remove(photo);
+        }
+
+        public async Task SetPhotoIsMainAsync(int userId, int photoId, bool isMain)
+        {
+            var user =
+                await _dataContext
+                    .Users.Include(u => u.Photos)
+                    .FirstOrDefaultAsync(u => u.Id == userId)
+                ?? throw new Exception("User not found");
+
+            var photo =
+                user.Photos.FirstOrDefault(p => p.Id == photoId)
+                ?? throw new Exception("Photo not found");
+
+            if (!photo.IsApproved)
+                throw new Exception("Photo is not approved");
+
+            photo.IsMain = isMain;
         }
     }
 }
