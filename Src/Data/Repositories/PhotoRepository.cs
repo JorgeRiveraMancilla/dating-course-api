@@ -18,6 +18,15 @@ namespace dating_course_api.Src.Data.Repositories
             await _dataContext.Photos.AddAsync(photo);
         }
 
+        public async Task DelePhotoAsync(int photoId)
+        {
+            var photo =
+                await _dataContext.Photos.FirstOrDefaultAsync(p => p.Id == photoId)
+                ?? throw new Exception("Photo not found");
+
+            _dataContext.Photos.Remove(photo);
+        }
+
         public async Task<PhotoDto?> GetMainPhotoByUserIdAsync(int userId)
         {
             return await _dataContext
@@ -47,15 +56,6 @@ namespace dating_course_api.Src.Data.Repositories
                     IsApproved = u.IsApproved
                 })
                 .ToListAsync();
-        }
-
-        public async Task RemovePhotoAsync(PhotoDto photoDto)
-        {
-            var photo =
-                await _dataContext.Photos.FindAsync(photoDto.Id)
-                ?? throw new Exception("Photo not found");
-
-            _dataContext.Photos.Remove(photo);
         }
 
         public async Task SetPhotoIsMainAsync(int userId, int photoId, bool isMain)
