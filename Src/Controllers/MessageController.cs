@@ -13,28 +13,30 @@ namespace dating_course_api.Src.Controllers
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
         [HttpPost]
-        public async Task<ActionResult<MessageDto>> CreateMessage(CreateMessageDto createMessageDto)
+        public async Task<ActionResult<MessageDto>> CreateMessage(NewMessageDto newMessageDto)
         {
             var userId = User.GetUserId();
 
-            if (userId == createMessageDto.RecipientUserId)
+            if (userId == newMessageDto.RecipientUserId)
                 return BadRequest("You cannot message yourself");
 
             var sender = await _unitOfWork.UserRepository.GetUserByIdAsync(userId);
             var recipient = await _unitOfWork.UserRepository.GetUserByIdAsync(
-                createMessageDto.RecipientUserId
+                newMessageDto.RecipientUserId
             );
 
             if (recipient == null || sender == null)
                 return BadRequest("Cannot send message at this time");
 
-            var message = new MessageDto
+            var message = new CreateMessageDto
             {
                 SenderId = sender.Id,
                 RecipientId = recipient.Id,
                 SenderUserName = sender.UserName,
                 RecipientUserName = recipient.UserName,
-                Content = createMessageDto.Content
+                Content = newMessageDto.Content,
+                SenderDeleted = false,
+                RecipientDeleted = false
             };
 
             await _unitOfWork.MessageRepository.CreateMessageAsync(message);

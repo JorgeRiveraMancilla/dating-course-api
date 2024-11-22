@@ -143,7 +143,7 @@ namespace dating_course_api.Src.Controllers
 
             var photo = await _unitOfWork.PhotoRepository.GetPhotoByIdAsync(photoId);
 
-            if (photo is null)
+            if (photo is null || photo.PublicId is null)
                 return BadRequest("Photo not found");
             else if (photo.UserId != userId)
                 return Unauthorized();

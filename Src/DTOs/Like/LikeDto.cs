@@ -2,7 +2,7 @@ namespace dating_course_api.Src.DTOs.Like
 {
     public class LikeDto
     {
-        public int SourceUserId { get; set; }
-        public int TargetUserId { get; set; }
+        public required int SourceUserId { get; set; }
+        public required int TargetUserId { get; set; }
     }
 }

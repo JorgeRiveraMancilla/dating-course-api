@@ -21,7 +21,7 @@ namespace dating_course_api.Src.Data.Repositories
             await _dataContext.Groups.AddAsync(group);
         }
 
-        public async Task CreateMessageAsync(MessageDto createMessageDto)
+        public async Task CreateMessageAsync(CreateMessageDto createMessageDto)
         {
             var message = _mapper.Map<Message>(createMessageDto);
             await _dataContext.Messages.AddAsync(message);

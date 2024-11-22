@@ -3,8 +3,8 @@ namespace dating_course_api.Src.Entities
     public class Message
     {
         public int Id { get; set; }
-        public required string SenderUsername { get; set; }
-        public required string RecipientUsername { get; set; }
+        public required string SenderUserName { get; set; }
+        public required string RecipientUserName { get; set; }
         public required string Content { get; set; }
         public DateTime? DateRead { get; set; }
         public required DateTime MessageSent { get; set; } = DateTime.UtcNow;

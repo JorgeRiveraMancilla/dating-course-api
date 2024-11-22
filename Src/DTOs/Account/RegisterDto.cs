@@ -6,7 +6,7 @@ namespace dating_course_api.Src.DTOs.Account
     public class RegisterDto
     {
         [StringLength(100, MinimumLength = 3)]
-        public required string Name { get; set; }
+        public required string UserName { get; set; }
 
         [EmailAddress]
         public required string Email { get; set; }

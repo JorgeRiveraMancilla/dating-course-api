@@ -72,7 +72,7 @@ namespace dating_course_api.Src.Controllers
         [HttpPost("approve-photo/{photoId}")]
         public async Task<ActionResult> ApprovePhoto(int photoId)
         {
-            var photo = await unitOfWork.PhotoRepository.GetPhotoByIdAsync(photoId);
+            var photo = await _unitOfWork.PhotoRepository.GetPhotoByIdAsync(photoId);
 
             if (photo is null)
                 return BadRequest("Could not get photo from db");
@@ -96,7 +96,7 @@ namespace dating_course_api.Src.Controllers
 
             if (photo.PublicId is not null)
             {
-                var result = await photoService.DeletePhotoAsync(photo.PublicId);
+                var result = await _photoService.DeletePhotoAsync(photo.PublicId);
 
                 if (result.Result == "ok")
                     await _unitOfWork.PhotoRepository.DelePhotoAsync(photoId);
