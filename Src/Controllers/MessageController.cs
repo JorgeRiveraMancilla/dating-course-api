@@ -1,4 +1,3 @@
-using AutoMapper;
 using dating_course_api.Src.DTOs.Message;
 using dating_course_api.Src.Extensions;
 using dating_course_api.Src.Helpers.Pagination;
@@ -9,10 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace dating_course_api.Src.Controllers
 {
     [Authorize]
-    public class MessageController(IUnitOfWork unitOfWork, IMapper mapper) : BaseApiController
+    public class MessageController(IUnitOfWork unitOfWork) : BaseApiController
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
-        private readonly IMapper _mapper = mapper;
 
         [HttpPost]
         public async Task<ActionResult<MessageDto>> CreateMessage(CreateMessageDto createMessageDto)
