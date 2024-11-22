@@ -4,6 +4,7 @@ namespace dating_course_api.Src.Interfaces
 {
     public interface IPhotoRepository
     {
+        Task ApprovePhotoAsync(int photoId);
         Task CreatePhotoAsync(CreatePhotoDto createPhotoDto);
         Task DelePhotoAsync(int photoId);
         Task<PhotoDto?> GetMainPhotoByUserIdAsync(int userId);

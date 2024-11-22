@@ -63,9 +63,51 @@ namespace dating_course_api.Src.Controllers
         [HttpGet("photos-to-moderate")]
         public async Task<ActionResult> GetPhotosForModeration()
         {
-            var photos = await unitOfWork.PhotoRepository.GetUnapprovedPhotosAsync();
+            var photos = await _unitOfWork.PhotoRepository.GetUnapprovedPhotosAsync();
 
             return Ok(photos);
+        }
+
+        [Authorize(Policy = "ModeratePhotoRole")]
+        [HttpPost("approve-photo/{photoId}")]
+        public async Task<ActionResult> ApprovePhoto(int photoId)
+        {
+            var photo = await unitOfWork.PhotoRepository.GetPhotoByIdAsync(photoId);
+
+            if (photo is null)
+                return BadRequest("Could not get photo from db");
+
+            await _unitOfWork.PhotoRepository.ApprovePhotoAsync(photoId);
+
+            if (await _unitOfWork.Complete())
+                return Ok();
+
+            return BadRequest("Failed to approve photo");
+        }
+
+        [Authorize(Policy = "ModeratePhotoRole")]
+        [HttpPost("reject-photo/{photoId}")]
+        public async Task<ActionResult> RejectPhoto(int photoId)
+        {
+            var photo = await _unitOfWork.PhotoRepository.GetPhotoByIdAsync(photoId);
+
+            if (photo is null)
+                return BadRequest("Could not get photo from db");
+
+            if (photo.PublicId is not null)
+            {
+                var result = await photoService.DeletePhotoAsync(photo.PublicId);
+
+                if (result.Result == "ok")
+                    await _unitOfWork.PhotoRepository.DelePhotoAsync(photoId);
+            }
+            else
+                await _unitOfWork.PhotoRepository.DelePhotoAsync(photoId);
+
+            if (await _unitOfWork.Complete())
+                return Ok();
+
+            return BadRequest("Failed to reject photo");
         }
     }
 }

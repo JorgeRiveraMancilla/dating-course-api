@@ -12,6 +12,15 @@ namespace dating_course_api.Src.Data.Repositories
         private readonly DataContext _dataContext = dataContext;
         private readonly IMapper _mapper = mapper;
 
+        public async Task ApprovePhotoAsync(int photoId)
+        {
+            var photo =
+                await _dataContext.Photos.FirstOrDefaultAsync(p => p.Id == photoId)
+                ?? throw new Exception("Photo not found");
+
+            photo.IsApproved = true;
+        }
+
         public async Task CreatePhotoAsync(CreatePhotoDto createPhotoDto)
         {
             var photo = _mapper.Map<Photo>(createPhotoDto);
