@@ -2,6 +2,7 @@ using AutoMapper;
 using dating_course_api.Src.DTOs.Account;
 using dating_course_api.Src.DTOs.Connection;
 using dating_course_api.Src.DTOs.Group;
+using dating_course_api.Src.DTOs.Like;
 using dating_course_api.Src.DTOs.Member;
 using dating_course_api.Src.DTOs.Message;
 using dating_course_api.Src.DTOs.Photo;
@@ -15,7 +16,13 @@ namespace dating_course_api.Src.Helpers
     {
         public AutoMapperProfiles()
         {
+            // User - Member
             CreateMap<User, UserDto>();
+            CreateMap<User, UserWithRole>()
+                .ForMember(
+                    dest => dest.Roles,
+                    opt => opt.MapFrom(src => src.UserRoles.Select(ur => ur.Role.Name).ToArray())
+                );
             CreateMap<User, MemberDto>()
                 .ForMember(
                     dest => dest.Age,
@@ -25,10 +32,16 @@ namespace dating_course_api.Src.Helpers
                     dest => dest.MainPhoto,
                     opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.IsMain))
                 );
-            CreateMap<Photo, PhotoDto>()
-                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId));
             CreateMap<MemberUpdateDto, User>();
             CreateMap<RegisterDto, User>();
+            CreateMap<MemberUpdateDto, UpdateUserDto>();
+
+            // Photo
+            CreateMap<Photo, PhotoDto>()
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId));
+            CreateMap<CreatePhotoDto, Photo>();
+
+            // Message
             CreateMap<Message, MessageDto>()
                 .ForMember(
                     dest => dest.SenderUserName,
@@ -38,17 +51,25 @@ namespace dating_course_api.Src.Helpers
                     dest => dest.RecipientUserName,
                     opt => opt.MapFrom(src => src.Recipient.UserName)
                 );
+
+            // Like
+            CreateMap<Like, LikeDto>();
+            CreateMap<CreateLikeDto, Like>();
+
+            // Group
+            CreateMap<Group, GroupDto>();
+            CreateMap<CreateGroupDto, Group>();
+
+            // Connection
+            CreateMap<Connection, ConnectionDto>();
+
+            // DateTime
             CreateMap<DateTime, DateTime>()
                 .ConvertUsing(d => DateTime.SpecifyKind(d, DateTimeKind.Utc));
             CreateMap<DateTime?, DateTime?>()
                 .ConvertUsing(d =>
                     d.HasValue ? DateTime.SpecifyKind(d.Value, DateTimeKind.Utc) : null
                 );
-            CreateMap<CreatePhotoDto, Photo>();
-            CreateMap<MemberUpdateDto, UpdateUserDto>();
-            CreateMap<Group, GroupDto>();
-            CreateMap<Connection, ConnectionDto>();
-            CreateMap<CreateGroupDto, Group>();
         }
     }
 }
