@@ -21,6 +21,15 @@ namespace dating_course_api.Src.Data.Repositories
         private readonly UserManager<User> _userManager = userManager;
         private readonly IMapper _mapper = mapper;
 
+        public async Task<IdentityResult> AddRolesToUserAsync(int userId, string[] roles)
+        {
+            var user =
+                await _userManager.FindByIdAsync(userId.ToString())
+                ?? throw new Exception("User not found");
+
+            return await _userManager.AddToRolesAsync(user, roles);
+        }
+
         public async Task<bool> CheckPasswordAsync(int userId, string password)
         {
             var user =
@@ -90,6 +99,20 @@ namespace dating_course_api.Src.Data.Repositories
             );
         }
 
+        public async Task<IEnumerable<string?>> GetRoleNamesAsync()
+        {
+            return await _dataContext.Roles.Select(r => r.Name).ToListAsync();
+        }
+
+        public async Task<IEnumerable<string>> GetRolesFromUserAsync(int userId)
+        {
+            var user =
+                await _userManager.FindByIdAsync(userId.ToString())
+                ?? throw new Exception("User not found");
+
+            return await _userManager.GetRolesAsync(user);
+        }
+
         public async Task<UserDto?> GetUserByEmailAsync(string email)
         {
             return await _dataContext
@@ -133,6 +156,15 @@ namespace dating_course_api.Src.Data.Repositories
                 .ThenInclude(ur => ur.Role)
                 .ProjectTo<UserWithRole>(_mapper.ConfigurationProvider)
                 .ToListAsync();
+        }
+
+        public async Task<IdentityResult> RemoveRolesFromUserAsync(int userId, string[] roles)
+        {
+            var user =
+                await _userManager.FindByIdAsync(userId.ToString())
+                ?? throw new Exception("User not found");
+
+            return await _userManager.RemoveFromRolesAsync(user, roles);
         }
 
         public void UpdateUser(UpdateUserDto updateUserDto)
