@@ -15,8 +15,6 @@ namespace dating_course_api.Src.DTOs.User
         public string? LookingFor { get; set; }
         public required string City { get; set; }
         public required string Country { get; set; }
-        public required DateTime Created { get; set; }
-        public required DateTime LastActive { get; set; }
         public List<PhotoDto> Photos { get; set; } = [];
     }
 }

@@ -6,6 +6,7 @@ namespace dating_course_api.Src.DTOs.Member
     {
         public required int Id { get; set; }
         public required string UserName { get; set; }
+        public required string Email { get; set; }
         public required string KnownAs { get; set; }
         public required int Age { get; set; }
         public required string Gender { get; set; }
