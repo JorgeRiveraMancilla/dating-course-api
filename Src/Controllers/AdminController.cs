@@ -58,5 +58,14 @@ namespace dating_course_api.Src.Controllers
 
             return Ok();
         }
+
+        [Authorize(Policy = "ModeratePhotoRole")]
+        [HttpGet("photos-to-moderate")]
+        public async Task<ActionResult> GetPhotosForModeration()
+        {
+            var photos = await unitOfWork.PhotoRepository.GetUnapprovedPhotosAsync();
+
+            return Ok(photos);
+        }
     }
 }
