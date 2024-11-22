@@ -38,15 +38,15 @@ namespace dating_course_api.Src.Data.Seed
 
             foreach (var role in roles)
             {
-                await roleManager.CreateAsync(role);
+                _ = await roleManager.CreateAsync(role);
             }
 
             foreach (var user in users)
             {
                 user.Photos.First().IsApproved = true;
                 user.UserName = user.UserName!.ToLower();
-                await userManager.CreateAsync(user, "Pa$$w0rd");
-                await userManager.AddToRoleAsync(user, "Member");
+                _ = await userManager.CreateAsync(user, "Pa$$w0rd");
+                _ = await userManager.AddToRoleAsync(user, "Member");
             }
 
             // FIXME: Use credentials from configuration
@@ -61,8 +61,8 @@ namespace dating_course_api.Src.Data.Seed
                 BirthDate = new DateOnly(1990, 1, 1)
             };
 
-            await userManager.CreateAsync(admin, "Pa$$w0rd");
-            await userManager.AddToRolesAsync(admin, ["Admin", "Moderator"]);
+            _ = await userManager.CreateAsync(admin, "Pa$$w0rd");
+            _ = await userManager.AddToRolesAsync(admin, ["Admin", "Moderator"]);
         }
     }
 

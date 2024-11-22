@@ -24,7 +24,7 @@ namespace dating_course_api.Src.Data.Repositories
         public async Task CreatePhotoAsync(CreatePhotoDto createPhotoDto)
         {
             var photo = _mapper.Map<Photo>(createPhotoDto);
-            await _dataContext.Photos.AddAsync(photo);
+            _ = await _dataContext.Photos.AddAsync(photo);
         }
 
         public async Task DelePhotoAsync(int photoId)
@@ -33,7 +33,7 @@ namespace dating_course_api.Src.Data.Repositories
                 await _dataContext.Photos.FirstOrDefaultAsync(p => p.Id == photoId)
                 ?? throw new Exception("Photo not found");
 
-            _dataContext.Photos.Remove(photo);
+            _ = _dataContext.Photos.Remove(photo);
         }
 
         public async Task<PhotoDto?> GetMainPhotoByUserIdAsync(int userId)

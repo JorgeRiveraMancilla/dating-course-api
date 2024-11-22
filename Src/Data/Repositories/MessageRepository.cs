@@ -18,13 +18,13 @@ namespace dating_course_api.Src.Data.Repositories
         public async Task CreateGroupAsync(CreateGroupDto createGroupDto)
         {
             var group = _mapper.Map<Group>(createGroupDto);
-            await _dataContext.Groups.AddAsync(group);
+            _ = await _dataContext.Groups.AddAsync(group);
         }
 
         public async Task CreateMessageAsync(CreateMessageDto createMessageDto)
         {
             var message = _mapper.Map<Message>(createMessageDto);
-            await _dataContext.Messages.AddAsync(message);
+            _ = await _dataContext.Messages.AddAsync(message);
         }
 
         public async Task DeleteMessageAsync(MessageDto messageDto)
@@ -32,7 +32,7 @@ namespace dating_course_api.Src.Data.Repositories
             var message =
                 await _dataContext.Messages.FindAsync(messageDto.Id)
                 ?? throw new Exception("Message not found");
-            _dataContext.Messages.Remove(message);
+            _ = _dataContext.Messages.Remove(message);
         }
 
         public async Task<ConnectionDto?> GetConnectionAsync(string connectionId)
@@ -136,7 +136,7 @@ namespace dating_course_api.Src.Data.Repositories
                     c.ConnectionId == connectionDto.ConnectionId
                 ) ?? throw new Exception("Connection not found");
 
-            _dataContext.Connections.Remove(connection);
+            _ = _dataContext.Connections.Remove(connection);
         }
     }
 }

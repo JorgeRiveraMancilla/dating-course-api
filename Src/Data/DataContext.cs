@@ -27,55 +27,78 @@ namespace dating_course_api.Src.Data
         {
             base.OnModelCreating(builder);
 
-            builder.Entity<User>(entity =>
+            _ = builder.Entity<User>(entity =>
             {
-                entity.HasIndex(u => u.Email).IsUnique();
-                entity.HasIndex(u => u.UserName).IsUnique(false);
+                _ = entity.HasIndex(u => u.Email).IsUnique();
+                _ = entity.HasIndex(u => u.UserName).IsUnique(false);
             });
 
-            builder
+            _ = builder
                 .Entity<User>()
                 .HasMany(ur => ur.UserRoles)
                 .WithOne(u => u.User)
                 .HasForeignKey(ur => ur.UserId)
                 .IsRequired();
 
-            builder
+            _ = builder
                 .Entity<Role>()
                 .HasMany(ur => ur.UserRoles)
                 .WithOne(u => u.Role)
                 .HasForeignKey(ur => ur.RoleId)
                 .IsRequired();
 
-            builder.Entity<Like>().HasKey(k => new { k.SourceUserId, k.TargetUserId });
+            _ = builder.Entity<Like>().HasKey(k => new { k.SourceUserId, k.TargetUserId });
 
-            builder
+            _ = builder
                 .Entity<Like>()
                 .HasOne(s => s.SourceUser)
                 .WithMany(l => l.LikedUsers)
                 .HasForeignKey(s => s.SourceUserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder
+            _ = builder
                 .Entity<Like>()
                 .HasOne(s => s.TargetUser)
                 .WithMany(l => l.LikedByUsers)
                 .HasForeignKey(s => s.TargetUserId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            builder
+            _ = builder
                 .Entity<Message>()
                 .HasOne(x => x.Recipient)
                 .WithMany(x => x.MessagesReceived)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder
+            _ = builder
                 .Entity<Message>()
                 .HasOne(x => x.Sender)
                 .WithMany(x => x.MessagesSent)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Entity<Photo>().HasQueryFilter(p => p.IsApproved);
+            _ = builder.Entity<Photo>().HasQueryFilter(p => p.IsApproved);
+
+            _ = builder
+                .Entity<Role>()
+                .HasData(
+                    new Role
+                    {
+                        Id = 1,
+                        Name = "Admin",
+                        NormalizedName = "ADMIN"
+                    },
+                    new Role
+                    {
+                        Id = 2,
+                        Name = "Moderator",
+                        NormalizedName = "MODERATOR"
+                    },
+                    new Role
+                    {
+                        Id = 3,
+                        Name = "Member",
+                        NormalizedName = "MEMBER"
+                    }
+                );
         }
     }
 }
