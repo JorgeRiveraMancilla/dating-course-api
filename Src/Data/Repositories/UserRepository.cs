@@ -126,6 +126,15 @@ namespace dating_course_api.Src.Data.Repositories
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<UserWithRole>> GetUsersWithRolesAsync()
+        {
+            return await _dataContext
+                .Users.Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                .ProjectTo<UserWithRole>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+        }
+
         public void UpdateUser(UpdateUserDto updateUserDto)
         {
             var user = _mapper.Map<User>(updateUserDto);

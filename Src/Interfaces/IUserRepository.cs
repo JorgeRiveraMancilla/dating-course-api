@@ -17,6 +17,7 @@ namespace dating_course_api.Src.Interfaces
         Task<UserDto?> GetUserByIdAsync(int id);
         Task<UserDto?> GetUserByPhotoIdAsync(int photoId);
         Task<IEnumerable<UserDto>> GetUsersAsync();
+        Task<IEnumerable<UserWithRole>> GetUsersWithRolesAsync();
         void UpdateUser(UpdateUserDto updateUserDto);
         Task<bool> UserExistsByEmailAsync(string email);
     }
