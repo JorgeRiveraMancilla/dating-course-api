@@ -1,3 +1,7 @@
+using dating_course_api.Src.DTOs.Photo;
+using dating_course_api.Src.DTOs.User;
+using dating_course_api.Src.Extensions;
+using dating_course_api.Src.Helpers.Pagination;
 using dating_course_api.Src.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,56 +16,72 @@ namespace dating_course_api.Src.Controllers
 
         [Authorize(Policy = "RequireAdminRole")]
         [HttpGet("users-with-roles")]
-        public async Task<ActionResult> GetUsersWithRoles()
+        public async Task<ActionResult<PagedList<UserWithRole>>> GetUsersWithRoles(
+            [FromQuery] PaginationParams paginationParams
+        )
         {
-            var users = await _unitOfWork.UserRepository.GetUsersWithRolesAsync();
-
+            var users = await _unitOfWork.UserRepository.GetUsersWithRolesAsync(paginationParams);
+            Response.AddPaginationHeader(users);
             return Ok(users);
         }
 
         [Authorize(Policy = "RequireAdminRole")]
-        [HttpPost("edit-roles/{id:int}")]
-        public async Task<ActionResult> EditRoles([FromRoute] int id, [FromQuery] string roles)
+        [HttpPost("edit-roles/{userId:int}")]
+        public async Task<ActionResult<IList<string>>> EditRoles(
+            [FromRoute] int userId,
+            [FromQuery] string roles
+        )
         {
+            var targetUser = await _unitOfWork.UserRepository.GetUserByIdAsync(userId);
+            if (targetUser is null)
+                return NotFound("Usuario no encontrado");
+
+            var targetUserRoles = await _unitOfWork.UserRepository.GetRolesFromUserAsync(
+                targetUser.Id
+            );
+            if (targetUserRoles.Contains("Admin"))
+                return BadRequest("No se pueden editar los roles de un administrador");
+
             if (string.IsNullOrEmpty(roles))
-                return BadRequest("you must select at least one role");
+                return BadRequest("Debe seleccionar al menos un rol");
 
-            var nameRoles = await _unitOfWork.UserRepository.GetRoleNamesAsync();
             var selectedRoles = roles.Split(",").ToArray();
+            var validRoles = new[] { "Member", "Moderator" };
 
-            if (selectedRoles.Any(role => !nameRoles.Contains(role)))
-                return BadRequest("Invalid roles");
+            if (selectedRoles.Any(role => !validRoles.Contains(role)))
+                return BadRequest("Roles inválidos");
 
-            var user = await _unitOfWork.UserRepository.GetUserByIdAsync(id);
+            if (!selectedRoles.Contains("Member"))
+                return BadRequest("El usuario debe tener el rol Member");
 
-            if (user is null)
-                return BadRequest("User not found");
-
-            var userId = user.Id;
-            var userRoles = await _unitOfWork.UserRepository.GetRolesFromUserAsync(userId);
+            if (selectedRoles.Except(validRoles).Any())
+                return BadRequest("Solo se permiten los roles Member y Moderator");
 
             var result = await _unitOfWork.UserRepository.AddRolesToUserAsync(
-                userId,
-                selectedRoles.Except(userRoles).ToArray()
+                targetUser.Id,
+                selectedRoles.Except(targetUserRoles).ToArray()
             );
 
             if (!result.Succeeded)
-                return BadRequest("Failed to add roles");
+                return BadRequest("Error al agregar roles");
 
             result = await _unitOfWork.UserRepository.RemoveRolesFromUserAsync(
-                userId,
-                userRoles.Except(selectedRoles).ToArray()
+                targetUser.Id,
+                targetUserRoles.Except(selectedRoles).ToArray()
             );
 
             if (!result.Succeeded)
-                return BadRequest("Failed to remove roles");
+                return BadRequest("Error al eliminar roles");
 
-            return Ok();
+            var updatedRoles = await _unitOfWork.UserRepository.GetRolesFromUserAsync(
+                targetUser.Id
+            );
+            return Ok(updatedRoles);
         }
 
         [Authorize(Policy = "ModeratePhotoRole")]
         [HttpGet("photos-to-moderate")]
-        public async Task<ActionResult> GetPhotosForModeration()
+        public async Task<ActionResult<PhotoForApprovalDto>> GetPhotosForModeration()
         {
             var photos = await _unitOfWork.PhotoRepository.GetUnapprovedPhotosAsync();
 
@@ -99,10 +119,10 @@ namespace dating_course_api.Src.Controllers
                 var result = await _photoService.DeletePhotoAsync(photo.PublicId);
 
                 if (result.Result == "ok")
-                    await _unitOfWork.PhotoRepository.DelePhotoAsync(photoId);
+                    await _unitOfWork.PhotoRepository.DeletePhotoAsync(photoId);
             }
             else
-                await _unitOfWork.PhotoRepository.DelePhotoAsync(photoId);
+                await _unitOfWork.PhotoRepository.DeletePhotoAsync(photoId);
 
             if (await _unitOfWork.Complete())
                 return Ok();
