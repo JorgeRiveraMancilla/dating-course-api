@@ -9,10 +9,15 @@ namespace dating_course_api.Src.Interfaces
     public interface IUserRepository
     {
         Task<IdentityResult> AddRolesToUserAsync(int userId, string[] roles);
+        Task<IdentityResult> ChangePasswordAsync(
+            int userId,
+            string CurrentPassword,
+            string NewPassword
+        );
         Task<bool> CheckPasswordAsync(int userId, string password);
         Task<IdentityResult> CreateUserAsync(RegisterDto registerDto, string password);
         Task<MemberDto?> GetMemberByEmailAsync(string email, bool isCurrentUser);
-        Task<MemberDto?> GetMemberByIdAsync(int id, bool isCurrentUser);
+        Task<MemberDto?> GetMemberByIdAsync(int id, bool isCurrentUser, int? currentUserId = null);
         Task<PagedList<MemberDto>> GetMembersAsync(UserParams userParams);
         Task<IEnumerable<string?>> GetRoleNamesAsync();
         Task<IEnumerable<string>> GetRolesFromUserAsync(int userId);
@@ -20,9 +25,9 @@ namespace dating_course_api.Src.Interfaces
         Task<UserDto?> GetUserByIdAsync(int id);
         Task<UserDto?> GetUserByPhotoIdAsync(int photoId);
         Task<IEnumerable<UserDto>> GetUsersAsync();
-        Task<IEnumerable<UserWithRole>> GetUsersWithRolesAsync();
+        Task<PagedList<UserWithRole>> GetUsersWithRolesAsync(PaginationParams paginationParams);
         Task<IdentityResult> RemoveRolesFromUserAsync(int userId, string[] roles);
-        void UpdateUser(UpdateUserDto updateUserDto);
+        Task UpdateUserAsync(int userid, UpdateUserDto updateUserDto);
         Task<bool> UserExistsByEmailAsync(string email);
     }
 }

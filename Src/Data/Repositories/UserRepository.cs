@@ -6,6 +6,7 @@ using dating_course_api.Src.DTOs.User;
 using dating_course_api.Src.Entities;
 using dating_course_api.Src.Helpers.Pagination;
 using dating_course_api.Src.Interfaces;
+using dating_course_api.Src.Validations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,6 +31,19 @@ namespace dating_course_api.Src.Data.Repositories
             return await _userManager.AddToRolesAsync(user, roles);
         }
 
+        public async Task<IdentityResult> ChangePasswordAsync(
+            int userId,
+            string CurrentPassword,
+            string NewPassword
+        )
+        {
+            var user =
+                await _userManager.FindByIdAsync(userId.ToString())
+                ?? throw new Exception("User not found");
+
+            return await _userManager.ChangePasswordAsync(user, CurrentPassword, NewPassword);
+        }
+
         public async Task<bool> CheckPasswordAsync(int userId, string password)
         {
             var user =
@@ -42,6 +56,10 @@ namespace dating_course_api.Src.Data.Repositories
         {
             var user = _mapper.Map<User>(registerDto);
             user.UserName = user.UserName?.ToLower();
+
+            _userManager.Options.User.RequireUniqueEmail = true;
+            _userManager.UserValidators.Clear();
+            _userManager.UserValidators.Add(new CustomUserValidator());
 
             return await _userManager.CreateAsync(user, password);
         }
@@ -59,17 +77,47 @@ namespace dating_course_api.Src.Data.Repositories
             return await query.SingleOrDefaultAsync();
         }
 
-        public async Task<MemberDto?> GetMemberByIdAsync(int id, bool isCurrentUser)
+        public async Task<MemberDto?> GetMemberByIdAsync(
+            int id,
+            bool isCurrentUser,
+            int? currentUserId = null
+        )
         {
-            var query = _dataContext
-                .Users.Where(u => u.Id == id)
-                .ProjectTo<MemberDto>(_mapper.ConfigurationProvider)
-                .AsQueryable();
+            var query = _dataContext.Users.Where(u => u.Id == id).AsQueryable();
 
             if (isCurrentUser)
                 query = query.IgnoreQueryFilters();
 
-            return await query.SingleOrDefaultAsync();
+            var likeExists =
+                currentUserId.HasValue
+                && await _dataContext.Likes.AnyAsync(l =>
+                    l.SourceUserId == currentUserId && l.TargetUserId == id
+                );
+
+            var projectedQuery = query
+                .ProjectTo<MemberDto>(_mapper.ConfigurationProvider)
+                .Select(member => new MemberDto
+                {
+                    Id = member.Id,
+                    UserName = member.UserName,
+                    Email = member.Email,
+                    KnownAs = member.KnownAs,
+                    BirthDate = member.BirthDate,
+                    Age = member.Age,
+                    Gender = member.Gender,
+                    Introduction = member.Introduction,
+                    LookingFor = member.LookingFor,
+                    Interests = member.Interests,
+                    City = member.City,
+                    Country = member.Country,
+                    Created = member.Created,
+                    LastActive = member.LastActive,
+                    Photos = member.Photos,
+                    MainPhoto = member.MainPhoto,
+                    IsLiked = likeExists
+                });
+
+            return await projectedQuery.SingleOrDefaultAsync();
         }
 
         public async Task<PagedList<MemberDto>> GetMembersAsync(UserParams userParams)
@@ -92,8 +140,35 @@ namespace dating_course_api.Src.Data.Repositories
                 _ => query.OrderByDescending(x => x.LastActive)
             };
 
+            var likedUserIds = await _dataContext
+                .Likes.Where(l => l.SourceUserId == userParams.CurrentUserId)
+                .Select(l => l.TargetUserId)
+                .ToListAsync();
+
+            var projectedQuery = query
+                .ProjectTo<MemberDto>(_mapper.ConfigurationProvider)
+                .Select(member => new MemberDto
+                {
+                    Id = member.Id,
+                    UserName = member.UserName,
+                    Email = member.Email,
+                    KnownAs = member.KnownAs,
+                    Age = member.Age,
+                    Gender = member.Gender,
+                    Introduction = member.Introduction,
+                    LookingFor = member.LookingFor,
+                    Interests = member.Interests,
+                    City = member.City,
+                    Country = member.Country,
+                    Created = member.Created,
+                    LastActive = member.LastActive,
+                    Photos = member.Photos,
+                    MainPhoto = member.MainPhoto,
+                    IsLiked = likedUserIds.Contains(member.Id)
+                });
+
             return await PagedList<MemberDto>.CreateAsync(
-                query.ProjectTo<MemberDto>(_mapper.ConfigurationProvider),
+                projectedQuery,
                 userParams.PageNumber,
                 userParams.PageSize
             );
@@ -149,13 +224,21 @@ namespace dating_course_api.Src.Data.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<UserWithRole>> GetUsersWithRolesAsync()
+        public async Task<PagedList<UserWithRole>> GetUsersWithRolesAsync(
+            PaginationParams paginationParams
+        )
         {
-            return await _dataContext
+            var query = _dataContext
                 .Users.Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
                 .ProjectTo<UserWithRole>(_mapper.ConfigurationProvider)
-                .ToListAsync();
+                .AsNoTracking();
+
+            return await PagedList<UserWithRole>.CreateAsync(
+                query,
+                paginationParams.PageNumber,
+                paginationParams.PageSize
+            );
         }
 
         public async Task<IdentityResult> RemoveRolesFromUserAsync(int userId, string[] roles)
@@ -167,10 +250,12 @@ namespace dating_course_api.Src.Data.Repositories
             return await _userManager.RemoveFromRolesAsync(user, roles);
         }
 
-        public void UpdateUser(UpdateUserDto updateUserDto)
+        public async Task UpdateUserAsync(int userid, UpdateUserDto updateUserDto)
         {
-            var user = _mapper.Map<User>(updateUserDto);
-            _dataContext.Entry(user).State = EntityState.Modified;
+            var user =
+                await _dataContext.Users.FindAsync(userid) ?? throw new Exception("User not found");
+
+            _mapper.Map(updateUserDto, user);
         }
 
         public async Task<bool> UserExistsByEmailAsync(string email)
