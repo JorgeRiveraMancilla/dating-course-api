@@ -17,13 +17,13 @@ namespace dating_course_api.Src.Helpers
         public AutoMapperProfiles()
         {
             // User - Member
-            _ = CreateMap<User, UserDto>();
-            _ = CreateMap<User, UserWithRole>()
+            CreateMap<User, UserDto>();
+            CreateMap<User, UserWithRole>()
                 .ForMember(
                     dest => dest.Roles,
                     opt => opt.MapFrom(src => src.UserRoles.Select(ur => ur.Role.Name).ToArray())
                 );
-            _ = CreateMap<User, MemberDto>()
+            CreateMap<User, MemberDto>()
                 .ForMember(
                     dest => dest.Age,
                     opt => opt.MapFrom(src => src.BirthDate.CalculateAge())
@@ -32,17 +32,17 @@ namespace dating_course_api.Src.Helpers
                     dest => dest.MainPhoto,
                     opt => opt.MapFrom(src => src.Photos.FirstOrDefault(p => p.IsMain))
                 );
-            _ = CreateMap<MemberUpdateDto, User>();
-            _ = CreateMap<RegisterDto, User>();
-            _ = CreateMap<MemberUpdateDto, UpdateUserDto>();
+            CreateMap<RegisterDto, User>();
+            CreateMap<UpdateUserDto, User>();
 
             // Photo
-            _ = CreateMap<Photo, PhotoDto>()
+            CreateMap<Photo, PhotoDto>()
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId));
-            _ = CreateMap<CreatePhotoDto, Photo>();
+            CreateMap<CreatePhotoDto, Photo>();
+            CreateMap<CreatePhotoDto, PhotoDto>();
 
             // Message
-            _ = CreateMap<Message, MessageDto>()
+            CreateMap<Message, MessageDto>()
                 .ForMember(
                     dest => dest.SenderUserName,
                     opt => opt.MapFrom(src => src.Sender.UserName)
@@ -51,17 +51,20 @@ namespace dating_course_api.Src.Helpers
                     dest => dest.RecipientUserName,
                     opt => opt.MapFrom(src => src.Recipient.UserName)
                 );
+            CreateMap<CreateMessageDto, Message>();
+            CreateMap<CreateMessageDto, MessageDto>();
 
             // Like
-            _ = CreateMap<Like, LikeDto>();
-            _ = CreateMap<CreateLikeDto, Like>();
+            CreateMap<Like, LikeDto>();
+            CreateMap<CreateLikeDto, Like>();
 
             // Group
-            _ = CreateMap<Group, GroupDto>();
-            _ = CreateMap<CreateGroupDto, Group>();
+            CreateMap<Group, GroupDto>();
+            CreateMap<CreateGroupDto, Group>();
 
             // Connection
-            _ = CreateMap<Connection, ConnectionDto>();
+            CreateMap<Connection, ConnectionDto>()
+                .ReverseMap();
 
             // DateTime
             CreateMap<DateTime, DateTime>()
