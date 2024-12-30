@@ -15,7 +15,9 @@ namespace dating_course_api.Src.Data.Repositories
         public async Task ApprovePhotoAsync(int photoId)
         {
             var photo =
-                await _dataContext.Photos.FirstOrDefaultAsync(p => p.Id == photoId)
+                await _dataContext
+                    .Photos.IgnoreQueryFilters()
+                    .FirstOrDefaultAsync(p => p.Id == photoId)
                 ?? throw new Exception("Photo not found");
 
             photo.IsApproved = true;
@@ -24,16 +26,19 @@ namespace dating_course_api.Src.Data.Repositories
         public async Task CreatePhotoAsync(CreatePhotoDto createPhotoDto)
         {
             var photo = _mapper.Map<Photo>(createPhotoDto);
-            _ = await _dataContext.Photos.AddAsync(photo);
+
+            await _dataContext.Photos.AddAsync(photo);
         }
 
-        public async Task DelePhotoAsync(int photoId)
+        public async Task DeletePhotoAsync(int photoId)
         {
             var photo =
-                await _dataContext.Photos.FirstOrDefaultAsync(p => p.Id == photoId)
+                await _dataContext
+                    .Photos.IgnoreQueryFilters()
+                    .FirstOrDefaultAsync(p => p.Id == photoId)
                 ?? throw new Exception("Photo not found");
 
-            _ = _dataContext.Photos.Remove(photo);
+            _dataContext.Photos.Remove(photo);
         }
 
         public async Task<PhotoDto?> GetMainPhotoByUserIdAsync(int userId)
@@ -50,6 +55,14 @@ namespace dating_course_api.Src.Data.Repositories
                 .Photos.IgnoreQueryFilters()
                 .ProjectTo<PhotoDto>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync(p => p.Id == id);
+        }
+
+        public async Task<PhotoDto?> GetPhotoByPublicIdAsync(string publicId)
+        {
+            return await _dataContext
+                .Photos.IgnoreQueryFilters()
+                .ProjectTo<PhotoDto>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync(p => p.PublicId == publicId);
         }
 
         public async Task<IEnumerable<PhotoForApprovalDto>> GetUnapprovedPhotosAsync()
@@ -69,15 +82,10 @@ namespace dating_course_api.Src.Data.Repositories
 
         public async Task SetPhotoIsMainAsync(int userId, int photoId, bool isMain)
         {
-            var user =
-                await _dataContext
-                    .Users.Include(u => u.Photos)
-                    .FirstOrDefaultAsync(u => u.Id == userId)
-                ?? throw new Exception("User not found");
-
             var photo =
-                user.Photos.FirstOrDefault(p => p.Id == photoId)
-                ?? throw new Exception("Photo not found");
+                await _dataContext.Photos.FirstOrDefaultAsync(p =>
+                    p.Id == photoId && p.UserId == userId
+                ) ?? throw new Exception("Photo not found");
 
             if (!photo.IsApproved)
                 throw new Exception("Photo is not approved");
