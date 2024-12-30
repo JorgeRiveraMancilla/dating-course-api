@@ -8,6 +8,7 @@ using dating_course_api.Src.Interfaces;
 using dating_course_api.Src.Middleware;
 using dating_course_api.Src.Services;
 using dating_course_api.Src.SignalR;
+using dating_course_api.Src.Validations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,7 @@ builder.Services.AddDbContext<DataContext>(opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 builder.Services.AddCors();
+builder.Services.AddScoped<IUserValidator<User>, CustomUserValidator>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ILikeRepository, LikeRepository>();
@@ -34,8 +36,13 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.Configure<CloudinarySettings>(
     builder.Configuration.GetSection("CloudinarySettings")
 );
-builder.Services.AddSignalR();
-builder.Services.AddSingleton<PresenceTracker>();
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = true;
+    options.KeepAliveInterval = TimeSpan.FromSeconds(30);
+});
+builder.Services.AddScoped<PresenceTracker>();
+builder.Services.AddHostedService<ConnectionCleanupService>();
 
 // Identity services
 builder
@@ -44,7 +51,10 @@ builder
         opt.Password.RequireNonAlphanumeric = false;
         opt.Password.RequiredLength = 8;
         opt.Password.RequiredUniqueChars = 0;
+
         opt.User.RequireUniqueEmail = true;
+        opt.User.AllowedUserNameCharacters =
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+ ";
     })
     .AddRoles<Role>()
     .AddRoleManager<RoleManager<Role>>()
@@ -54,13 +64,15 @@ builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        var tokenKey =
-            builder.Configuration["TokenKey"] ?? throw new Exception("TokenKey not found");
-
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenKey)),
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(
+                    builder.Configuration["JWTSettings:TokenKey"]
+                        ?? throw new Exception("TokenKey no encontrada")
+                )
+            ),
             ValidateIssuer = false,
             ValidateAudience = false
         };
@@ -71,10 +83,10 @@ builder
             {
                 var accessToken = context.Request.Query["access_token"];
                 var path = context.HttpContext.Request.Path;
-
-                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hub"))
+                {
                     context.Token = accessToken;
-
+                }
                 return Task.CompletedTask;
             }
         };
@@ -87,16 +99,19 @@ builder
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();
+app.UseRouting();
 app.UseCors(x =>
     x.AllowAnyHeader()
         .AllowAnyMethod()
-        .AllowCredentials()
         .WithOrigins("http://localhost:4200", "https://localhost:4200")
+        .AllowCredentials()
 );
 
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapHub<PresenceHub>("/hub/presence");
+app.MapHub<ChatHub>("/hub/chat");
 app.MapControllers();
 
 using var scope = app.Services.CreateScope();
@@ -106,9 +121,12 @@ try
     var context = services.GetRequiredService<DataContext>();
     var userManager = services.GetRequiredService<UserManager<User>>();
     var roleManager = services.GetRequiredService<RoleManager<Role>>();
+    var photoService = services.GetRequiredService<IPhotoService>();
+    var env = services.GetRequiredService<IWebHostEnvironment>();
+
     await context.Database.MigrateAsync();
     await context.Database.ExecuteSqlRawAsync("DELETE FROM [Connections]");
-    await Seeder.SeedUsers(userManager, roleManager);
+    await Seeder.SeedUsers(userManager, roleManager, app.Configuration, env, photoService);
 }
 catch (Exception ex)
 {
