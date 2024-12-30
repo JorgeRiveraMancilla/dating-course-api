@@ -25,7 +25,7 @@ namespace dating_course_api.Src.Helpers
                 return;
 
             user.LastActive = DateTime.UtcNow;
-            _ = await dataContext.SaveChangesAsync();
+            await dataContext.SaveChangesAsync();
         }
     }
 }
