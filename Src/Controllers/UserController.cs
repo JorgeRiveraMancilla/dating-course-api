@@ -1,4 +1,3 @@
-using AutoMapper;
 using dating_course_api.Src.DTOs.Member;
 using dating_course_api.Src.DTOs.Photo;
 using dating_course_api.Src.DTOs.User;
@@ -11,15 +10,14 @@ using Microsoft.AspNetCore.Mvc;
 namespace dating_course_api.Src.Controllers
 {
     [Authorize]
-    public class UserController(IUnitOfWork unitOfWork, IPhotoService photoService, IMapper mapper)
+    public class UserController(IUnitOfWork unitOfWork, IPhotoService photoService)
         : BaseApiController
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IPhotoService _photoService = photoService;
-        private readonly IMapper _mapper = mapper;
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers(
+        public async Task<ActionResult<PagedList<MemberDto>>> GetUsers(
             [FromQuery] UserParams userParams
         )
         {
@@ -39,7 +37,11 @@ namespace dating_course_api.Src.Controllers
             var userId = User.GetUserId();
             var isCurrentUser = userId == id;
 
-            var user = await _unitOfWork.UserRepository.GetMemberByIdAsync(id, isCurrentUser);
+            var user = await _unitOfWork.UserRepository.GetMemberByIdAsync(
+                id,
+                isCurrentUser,
+                userId
+            );
 
             if (user is null)
                 return NotFound();
@@ -50,7 +52,7 @@ namespace dating_course_api.Src.Controllers
         [HttpPut("{id:int}")]
         public async Task<ActionResult> UpdateUser(
             [FromRoute] int id,
-            [FromBody] MemberUpdateDto memberUpdateDto
+            [FromBody] UpdateUserDto updateUserDto
         )
         {
             var userId = User.GetUserId();
@@ -58,8 +60,7 @@ namespace dating_course_api.Src.Controllers
             if (id != userId)
                 return Unauthorized();
 
-            var updateUserDto = _mapper.Map<UpdateUserDto>(memberUpdateDto);
-            _unitOfWork.UserRepository.UpdateUser(updateUserDto);
+            await _unitOfWork.UserRepository.UpdateUserAsync(id, updateUserDto);
 
             if (await _unitOfWork.Complete())
                 return NoContent();
@@ -91,11 +92,12 @@ namespace dating_course_api.Src.Controllers
             await _unitOfWork.PhotoRepository.CreatePhotoAsync(createPhotoDto);
 
             if (await _unitOfWork.Complete())
-                return CreatedAtAction(
-                    nameof(GetUser),
-                    new { username = user.UserName },
-                    _mapper.Map<PhotoDto>(createPhotoDto)
+            {
+                var photo = await _unitOfWork.PhotoRepository.GetPhotoByPublicIdAsync(
+                    createPhotoDto.PublicId
                 );
+                return Ok(photo);
+            }
 
             return BadRequest("Problem adding photo");
         }
@@ -154,7 +156,7 @@ namespace dating_course_api.Src.Controllers
             if (result.Error is not null)
                 return BadRequest(result.Error.Message);
 
-            await _unitOfWork.PhotoRepository.DelePhotoAsync(photo.Id);
+            await _unitOfWork.PhotoRepository.DeletePhotoAsync(photo.Id);
 
             if (await _unitOfWork.Complete())
                 return Ok();
