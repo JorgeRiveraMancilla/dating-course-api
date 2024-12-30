@@ -17,7 +17,7 @@ namespace dating_course_api.Src.Data.Repositories
         public async Task CreateLikeAsync(CreateLikeDto createLikeDto)
         {
             var like = _mapper.Map<Like>(createLikeDto);
-            _ = await _dataContext.Likes.AddAsync(like);
+            await _dataContext.Likes.AddAsync(like);
         }
 
         public async Task DeleteLikeAsync(LikeDto likeDto)
@@ -27,7 +27,7 @@ namespace dating_course_api.Src.Data.Repositories
                     l.SourceUserId == likeDto.SourceUserId && l.TargetUserId == likeDto.TargetUserId
                 ) ?? throw new Exception("Like not found");
 
-            _ = _dataContext.Likes.Remove(like);
+            _dataContext.Likes.Remove(like);
         }
 
         public async Task<IEnumerable<int>> GetCurrentUserLikeIdsAsync(int currentUserId)

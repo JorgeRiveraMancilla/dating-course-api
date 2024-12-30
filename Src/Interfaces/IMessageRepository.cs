@@ -7,6 +7,7 @@ namespace dating_course_api.Src.Interfaces
 {
     public interface IMessageRepository
     {
+        Task CreateConnectionAsync(ConnectionDto connectionDto);
         Task CreateGroupAsync(CreateGroupDto createGroupDto);
         Task CreateMessageAsync(CreateMessageDto createMessageDto);
         Task DeleteMessageAsync(MessageDto messageDto);
@@ -16,6 +17,6 @@ namespace dating_course_api.Src.Interfaces
         Task<GroupDto?> GetMessageGroupAsync(string groupName);
         Task<PagedList<MessageDto>> GetMessagesForUserAsync(MessageParams messageParams);
         Task<IEnumerable<MessageDto>> GetMessageThreadAsync(int currentUserId, int recipientUserId);
-        Task RemoveConnection(ConnectionDto connectionDto);
+        Task RemoveConnectionAsync(ConnectionDto connectionDto);
     }
 }

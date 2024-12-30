@@ -15,16 +15,22 @@ namespace dating_course_api.Src.Data.Repositories
         private readonly DataContext _dataContext = dataContext;
         private readonly IMapper _mapper = mapper;
 
+        public async Task CreateConnectionAsync(ConnectionDto connectionDto)
+        {
+            var connection = _mapper.Map<Connection>(connectionDto);
+            await _dataContext.Connections.AddAsync(connection);
+        }
+
         public async Task CreateGroupAsync(CreateGroupDto createGroupDto)
         {
             var group = _mapper.Map<Group>(createGroupDto);
-            _ = await _dataContext.Groups.AddAsync(group);
+            await _dataContext.Groups.AddAsync(group);
         }
 
         public async Task CreateMessageAsync(CreateMessageDto createMessageDto)
         {
             var message = _mapper.Map<Message>(createMessageDto);
-            _ = await _dataContext.Messages.AddAsync(message);
+            await _dataContext.Messages.AddAsync(message);
         }
 
         public async Task DeleteMessageAsync(MessageDto messageDto)
@@ -32,7 +38,7 @@ namespace dating_course_api.Src.Data.Repositories
             var message =
                 await _dataContext.Messages.FindAsync(messageDto.Id)
                 ?? throw new Exception("Message not found");
-            _ = _dataContext.Messages.Remove(message);
+            _dataContext.Messages.Remove(message);
         }
 
         public async Task<ConnectionDto?> GetConnectionAsync(string connectionId)
@@ -129,14 +135,14 @@ namespace dating_course_api.Src.Data.Repositories
             return await query.ProjectTo<MessageDto>(_mapper.ConfigurationProvider).ToListAsync();
         }
 
-        public async Task RemoveConnection(ConnectionDto connectionDto)
+        public async Task RemoveConnectionAsync(ConnectionDto connectionDto)
         {
             var connection =
                 await _dataContext.Connections.SingleOrDefaultAsync(c =>
                     c.ConnectionId == connectionDto.ConnectionId
                 ) ?? throw new Exception("Connection not found");
 
-            _ = _dataContext.Connections.Remove(connection);
+            _dataContext.Connections.Remove(connection);
         }
     }
 }
