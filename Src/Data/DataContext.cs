@@ -27,59 +27,33 @@ namespace dating_course_api.Src.Data
         {
             base.OnModelCreating(builder);
 
-            _ = builder.Entity<User>(entity =>
+            // User configuration
+            builder.Entity<User>(b =>
             {
-                _ = entity.HasIndex(u => u.Email).IsUnique();
-                _ = entity.HasIndex(u => u.UserName).IsUnique(false);
+                // Email y Username configuration
+                b.HasIndex(u => u.NormalizedEmail).HasDatabaseName("EmailIndex").IsUnique();
+
+                b.HasIndex(u => u.NormalizedUserName)
+                    .HasDatabaseName("UserNameIndex")
+                    .IsUnique(false);
+
+                // User roles configuration
+                b.HasMany(ur => ur.UserRoles)
+                    .WithOne(u => u.User)
+                    .HasForeignKey(ur => ur.UserId)
+                    .IsRequired();
             });
 
-            _ = builder
-                .Entity<User>()
-                .HasMany(ur => ur.UserRoles)
-                .WithOne(u => u.User)
-                .HasForeignKey(ur => ur.UserId)
-                .IsRequired();
+            // Role configuration
+            builder.Entity<Role>(b =>
+            {
+                b.HasMany(ur => ur.UserRoles)
+                    .WithOne(u => u.Role)
+                    .HasForeignKey(ur => ur.RoleId)
+                    .IsRequired();
 
-            _ = builder
-                .Entity<Role>()
-                .HasMany(ur => ur.UserRoles)
-                .WithOne(u => u.Role)
-                .HasForeignKey(ur => ur.RoleId)
-                .IsRequired();
-
-            _ = builder.Entity<Like>().HasKey(k => new { k.SourceUserId, k.TargetUserId });
-
-            _ = builder
-                .Entity<Like>()
-                .HasOne(s => s.SourceUser)
-                .WithMany(l => l.LikedUsers)
-                .HasForeignKey(s => s.SourceUserId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            _ = builder
-                .Entity<Like>()
-                .HasOne(s => s.TargetUser)
-                .WithMany(l => l.LikedByUsers)
-                .HasForeignKey(s => s.TargetUserId)
-                .OnDelete(DeleteBehavior.NoAction);
-
-            _ = builder
-                .Entity<Message>()
-                .HasOne(x => x.Recipient)
-                .WithMany(x => x.MessagesReceived)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            _ = builder
-                .Entity<Message>()
-                .HasOne(x => x.Sender)
-                .WithMany(x => x.MessagesSent)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            _ = builder.Entity<Photo>().HasQueryFilter(p => p.IsApproved);
-
-            _ = builder
-                .Entity<Role>()
-                .HasData(
+                // Seed roles
+                b.HasData(
                     new Role
                     {
                         Id = 1,
@@ -99,6 +73,38 @@ namespace dating_course_api.Src.Data
                         NormalizedName = "MEMBER"
                     }
                 );
+            });
+
+            // Like configuration
+            builder.Entity<Like>(b =>
+            {
+                b.HasKey(k => new { k.SourceUserId, k.TargetUserId });
+
+                b.HasOne(s => s.SourceUser)
+                    .WithMany(l => l.LikedUsers)
+                    .HasForeignKey(s => s.SourceUserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                b.HasOne(s => s.TargetUser)
+                    .WithMany(l => l.LikedByUsers)
+                    .HasForeignKey(s => s.TargetUserId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            // Message configuration
+            builder.Entity<Message>(b =>
+            {
+                b.HasOne(x => x.Recipient)
+                    .WithMany(x => x.MessagesReceived)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasOne(x => x.Sender)
+                    .WithMany(x => x.MessagesSent)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Photo configuration
+            builder.Entity<Photo>().HasQueryFilter(p => p.IsApproved);
         }
     }
 }
