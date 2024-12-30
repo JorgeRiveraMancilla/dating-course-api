@@ -7,6 +7,7 @@ namespace dating_course_api.Src.DTOs.Message
         public required int RecipientId { get; set; }
         public required string RecipientUserName { get; set; }
         public required string Content { get; set; }
+        public DateTime? DateRead { get; set; }
         public DateTime MessageSent { get; set; } = DateTime.UtcNow;
         public required bool SenderDeleted { get; set; }
         public required bool RecipientDeleted { get; set; }

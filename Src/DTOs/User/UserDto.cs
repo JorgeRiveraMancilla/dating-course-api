@@ -11,8 +11,8 @@ namespace dating_course_api.Src.DTOs.User
         public required string KnownAs { get; set; }
         public required string Gender { get; set; }
         public string? Introduction { get; set; }
-        public string? Interests { get; set; }
         public string? LookingFor { get; set; }
+        public string? Interests { get; set; }
         public required string City { get; set; }
         public required string Country { get; set; }
         public List<PhotoDto> Photos { get; set; } = [];
