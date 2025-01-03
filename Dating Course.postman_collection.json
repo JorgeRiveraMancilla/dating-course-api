@@ -1,32 +1,8 @@
 {
     "info": {
-        "_postman_id": "1234567890abcdef1234567890abcdef",
         "name": "Dating Course API",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
-    "variable": [
-        {
-            "key": "base_url",
-            "value": "http://localhost:5000/api",
-            "type": "string"
-        }
-    ],
-    "event": [
-        {
-            "listen": "test",
-            "script": {
-                "exec": [
-                    "if (pm.response.code === 200) {",
-                    "    var jsonData = pm.response.json();",
-                    "    if (jsonData.token) {",
-                    "        pm.environment.set('authToken', jsonData.token);",
-                    "    }",
-                    "}"
-                ],
-                "type": "text/javascript"
-            }
-        }
-    ],
     "item": [
         {
             "name": "Account",
@@ -35,28 +11,27 @@
                     "name": "Register",
                     "request": {
                         "method": "POST",
-                        "header": [],
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"userName\": \"testuser\",\n    \"email\": \"testuser@example.com\",\n    \"knownAs\": \"Test User\",\n    \"gender\": \"male\",\n    \"birthDate\": \"1990-01-01\",\n    \"city\": \"Test City\",\n    \"country\": \"Test Country\",\n    \"password\": \"P@ssw0rd\",\n    \"confirmPassword\": \"P@ssw0rd\"\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
+                            "raw": "{\n    \"userName\": \"testuser\",\n    \"email\": \"test@example.com\",\n    \"knownAs\": \"Test User\",\n    \"gender\": \"male\",\n    \"birthDate\": \"1990-01-01\",\n    \"city\": \"Test City\",\n    \"country\": \"Test Country\",\n    \"password\": \"Password123!\",\n    \"confirmPassword\": \"Password123!\"\n}"
                         },
                         "url": {
-                            "raw": "{{base_url}}/account/register",
+                            "raw": "{{baseUrl}}/account/register",
                             "host": [
-                                "{{base_url}}"
+                                "{{baseUrl}}"
                             ],
                             "path": [
                                 "account",
                                 "register"
                             ]
                         }
-                    },
-                    "response": []
+                    }
                 },
                 {
                     "name": "Login",
@@ -64,40 +39,78 @@
                         {
                             "listen": "test",
                             "script": {
+                                "type": "text/javascript",
                                 "exec": [
-                                    "if (pm.response.code === 200) {",
-                                    "    var jsonData = pm.response.json();",
-                                    "    pm.environment.set('authToken', jsonData.token);",
+                                    "const response = pm.response.json();",
+                                    "if (response.token) {",
+                                    "    pm.environment.set('authToken', response.token);",
+                                    "    pm.environment.set('userId', response.userId);",
+                                    "    pm.environment.set('userName', response.userName);",
+                                    "    pm.environment.set('userGender', response.userGender);",
                                     "}"
-                                ],
-                                "type": "text/javascript"
+                                ]
                             }
                         }
                     ],
                     "request": {
                         "method": "POST",
-                        "header": [],
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"email\": \"testuser@example.com\",\n    \"password\": \"P@ssw0rd\"\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
+                            "raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"Password123!\"\n}"
                         },
                         "url": {
-                            "raw": "{{base_url}}/account/login",
+                            "raw": "{{baseUrl}}/account/login",
                             "host": [
-                                "{{base_url}}"
+                                "{{baseUrl}}"
                             ],
                             "path": [
                                 "account",
                                 "login"
                             ]
                         }
-                    },
-                    "response": []
+                    }
+                },
+                {
+                    "name": "Change Password",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{authToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"currentPassword\": \"Password123!\",\n    \"newPassword\": \"NewPassword123!\",\n    \"confirmPassword\": \"NewPassword123!\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/account/change-password",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "account",
+                                "change-password"
+                            ]
+                        }
+                    }
                 }
             ]
         },
@@ -107,18 +120,21 @@
                 {
                     "name": "Get Users",
                     "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{authToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
                         "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{authToken}}",
-                                "type": "text"
-                            }
-                        ],
                         "url": {
-                            "raw": "{{base_url}}/user?pageNumber=1&pageSize=10&minAge=18&maxAge=99&gender=female&orderBy=lastActive",
+                            "raw": "{{baseUrl}}/user?pageNumber=1&pageSize=10&gender=female&minAge=18&maxAge=99&orderBy=lastActive",
                             "host": [
-                                "{{base_url}}"
+                                "{{baseUrl}}"
                             ],
                             "path": [
                                 "user"
@@ -133,6 +149,10 @@
                                     "value": "10"
                                 },
                                 {
+                                    "key": "gender",
+                                    "value": "female"
+                                },
+                                {
                                     "key": "minAge",
                                     "value": "18"
                                 },
@@ -141,124 +161,130 @@
                                     "value": "99"
                                 },
                                 {
-                                    "key": "gender",
-                                    "value": "female"
-                                },
-                                {
                                     "key": "orderBy",
                                     "value": "lastActive"
                                 }
                             ]
                         }
-                    },
-                    "response": []
+                    }
                 },
                 {
                     "name": "Get User",
                     "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{authToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
                         "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{authToken}}",
-                                "type": "text"
-                            }
-                        ],
                         "url": {
-                            "raw": "{{base_url}}/user/1",
+                            "raw": "{{baseUrl}}/user/{{userId}}",
                             "host": [
-                                "{{base_url}}"
+                                "{{baseUrl}}"
                             ],
                             "path": [
                                 "user",
-                                "1"
+                                "{{userId}}"
                             ]
                         }
-                    },
-                    "response": []
+                    }
                 },
                 {
                     "name": "Update User",
                     "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{authToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
                         "method": "PUT",
                         "header": [
                             {
-                                "key": "Authorization",
-                                "value": "Bearer {{authToken}}",
-                                "type": "text"
+                                "key": "Content-Type",
+                                "value": "application/json"
                             }
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"introduction\": \"Updated introduction\",\n    \"interests\": \"Updated interests\",\n    \"lookingFor\": \"Updated looking for\",\n    \"city\": \"Updated City\",\n    \"country\": \"Updated Country\"\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
+                            "raw": "{\n    \"userName\": \"updateduser\",\n    \"knownAs\": \"Updated User\",\n    \"gender\": \"male\",\n    \"birthDate\": \"1990-01-01\",\n    \"city\": \"Updated City\",\n    \"country\": \"Updated Country\",\n    \"introduction\": \"This is my introduction\",\n    \"lookingFor\": \"Looking for friends\",\n    \"interests\": \"Reading, movies\"\n}"
                         },
                         "url": {
-                            "raw": "{{base_url}}/user/1",
+                            "raw": "{{baseUrl}}/user/{{userId}}",
                             "host": [
-                                "{{base_url}}"
+                                "{{baseUrl}}"
                             ],
                             "path": [
                                 "user",
-                                "1"
+                                "{{userId}}"
                             ]
                         }
-                    },
-                    "response": []
+                    }
                 },
                 {
                     "name": "Add Photo",
                     "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{authToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
                         "method": "POST",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{authToken}}",
-                                "type": "text"
-                            }
-                        ],
+                        "header": [],
                         "body": {
                             "mode": "formdata",
                             "formdata": [
                                 {
                                     "key": "file",
                                     "type": "file",
-                                    "src": "/path/to/image.jpg"
+                                    "src": []
                                 }
                             ]
                         },
                         "url": {
-                            "raw": "{{base_url}}/user/add-photo",
+                            "raw": "{{baseUrl}}/user/add-photo",
                             "host": [
-                                "{{base_url}}"
+                                "{{baseUrl}}"
                             ],
                             "path": [
                                 "user",
                                 "add-photo"
                             ]
                         }
-                    },
-                    "response": []
+                    }
                 },
                 {
                     "name": "Set Main Photo",
                     "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{authToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
                         "method": "PUT",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{authToken}}",
-                                "type": "text"
-                            }
-                        ],
                         "url": {
-                            "raw": "{{base_url}}/user/set-main-photo/1",
+                            "raw": "{{baseUrl}}/user/set-main-photo/1",
                             "host": [
-                                "{{base_url}}"
+                                "{{baseUrl}}"
                             ],
                             "path": [
                                 "user",
@@ -266,24 +292,26 @@
                                 "1"
                             ]
                         }
-                    },
-                    "response": []
+                    }
                 },
                 {
                     "name": "Delete Photo",
                     "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{authToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
                         "method": "DELETE",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{authToken}}",
-                                "type": "text"
-                            }
-                        ],
                         "url": {
-                            "raw": "{{base_url}}/user/delete-photo/1",
+                            "raw": "{{baseUrl}}/user/delete-photo/1",
                             "host": [
-                                "{{base_url}}"
+                                "{{baseUrl}}"
                             ],
                             "path": [
                                 "user",
@@ -291,98 +319,7 @@
                                 "1"
                             ]
                         }
-                    },
-                    "response": []
-                }
-            ]
-        },
-        {
-            "name": "Likes",
-            "item": [
-                {
-                    "name": "Toggle Like",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{authToken}}",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/like/2",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "like",
-                                "2"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Get Current User Like IDs",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{authToken}}",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/like/list",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "like",
-                                "list"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Get User Likes",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{authToken}}",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/like?predicate=liked&pageNumber=1&pageSize=10",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "like"
-                            ],
-                            "query": [
-                                {
-                                    "key": "predicate",
-                                    "value": "liked"
-                                },
-                                {
-                                    "key": "pageNumber",
-                                    "value": "1"
-                                },
-                                {
-                                    "key": "pageSize",
-                                    "value": "10"
-                                }
-                            ]
-                        }
-                    },
-                    "response": []
+                    }
                 }
             ]
         },
@@ -392,50 +329,56 @@
                 {
                     "name": "Create Message",
                     "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{authToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
                         "method": "POST",
                         "header": [
                             {
-                                "key": "Authorization",
-                                "value": "Bearer {{authToken}}",
-                                "type": "text"
+                                "key": "Content-Type",
+                                "value": "application/json"
                             }
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"recipientUserId\": 2,\n    \"content\": \"Hello, this is a test message!\"\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
+                            "raw": "{\n    \"recipientUserId\": 2,\n    \"content\": \"Hello! How are you?\"\n}"
                         },
                         "url": {
-                            "raw": "{{base_url}}/message",
+                            "raw": "{{baseUrl}}/message",
                             "host": [
-                                "{{base_url}}"
+                                "{{baseUrl}}"
                             ],
                             "path": [
                                 "message"
                             ]
                         }
-                    },
-                    "response": []
+                    }
                 },
                 {
                     "name": "Get Messages For User",
                     "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{authToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
                         "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{authToken}}",
-                                "type": "text"
-                            }
-                        ],
                         "url": {
-                            "raw": "{{base_url}}/message?container=Inbox&pageNumber=1&pageSize=10",
+                            "raw": "{{baseUrl}}/message?container=Unread&pageNumber=1&pageSize=10",
                             "host": [
-                                "{{base_url}}"
+                                "{{baseUrl}}"
                             ],
                             "path": [
                                 "message"
@@ -443,7 +386,8 @@
                             "query": [
                                 {
                                     "key": "container",
-                                    "value": "Inbox"
+                                    "value": "Unread",
+                                    "description": "Options: Unread, Inbox, Outbox"
                                 },
                                 {
                                     "key": "pageNumber",
@@ -455,24 +399,26 @@
                                 }
                             ]
                         }
-                    },
-                    "response": []
+                    }
                 },
                 {
                     "name": "Get Message Thread",
                     "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{authToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
                         "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{authToken}}",
-                                "type": "text"
-                            }
-                        ],
                         "url": {
-                            "raw": "{{base_url}}/message/thread/2",
+                            "raw": "{{baseUrl}}/message/thread/2",
                             "host": [
-                                "{{base_url}}"
+                                "{{baseUrl}}"
                             ],
                             "path": [
                                 "message",
@@ -480,32 +426,33 @@
                                 "2"
                             ]
                         }
-                    },
-                    "response": []
+                    }
                 },
                 {
                     "name": "Delete Message",
                     "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{authToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
                         "method": "DELETE",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{authToken}}",
-                                "type": "text"
-                            }
-                        ],
                         "url": {
-                            "raw": "{{base_url}}/message/1",
+                            "raw": "{{baseUrl}}/message/1",
                             "host": [
-                                "{{base_url}}"
+                                "{{baseUrl}}"
                             ],
                             "path": [
                                 "message",
                                 "1"
                             ]
                         }
-                    },
-                    "response": []
+                    }
                 }
             ]
         },
@@ -515,47 +462,62 @@
                 {
                     "name": "Get Users With Roles",
                     "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{authToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
                         "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{authToken}}",
-                                "type": "text"
-                            }
-                        ],
                         "url": {
-                            "raw": "{{base_url}}/admin/users-with-roles",
+                            "raw": "{{baseUrl}}/admin/users-with-roles?pageNumber=1&pageSize=10",
                             "host": [
-                                "{{base_url}}"
+                                "{{baseUrl}}"
                             ],
                             "path": [
                                 "admin",
                                 "users-with-roles"
+                            ],
+                            "query": [
+                                {
+                                    "key": "pageNumber",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "pageSize",
+                                    "value": "10"
+                                }
                             ]
                         }
-                    },
-                    "response": []
+                    }
                 },
                 {
                     "name": "Edit Roles",
                     "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{authToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
                         "method": "POST",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{authToken}}",
-                                "type": "text"
-                            }
-                        ],
                         "url": {
-                            "raw": "{{base_url}}/admin/edit-roles/2?roles=Member,Moderator",
+                            "raw": "{{baseUrl}}/admin/edit-roles/1?roles=Member,Moderator",
                             "host": [
-                                "{{base_url}}"
+                                "{{baseUrl}}"
                             ],
                             "path": [
                                 "admin",
                                 "edit-roles",
-                                "2"
+                                "1"
                             ],
                             "query": [
                                 {
@@ -564,111 +526,89 @@
                                 }
                             ]
                         }
-                    },
-                    "response": []
+                    }
                 },
                 {
-                    "name": "Get Photos For Moderation",
+                    "name": "Get Photos To Moderate",
                     "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{authToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
                         "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{authToken}}",
-                                "type": "text"
-                            }
-                        ],
                         "url": {
-                            "raw": "{{base_url}}/admin/photos-to-moderate",
+                            "raw": "{{baseUrl}}/admin/photos-to-moderate",
                             "host": [
-                                "{{base_url}}"
+                                "{{baseUrl}}"
                             ],
                             "path": [
                                 "admin",
                                 "photos-to-moderate"
                             ]
                         }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Approve Photo",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{authToken}}",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/admin/approve-photo/1",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "admin",
-                                "approve-photo",
-                                "1"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Reject Photo",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{authToken}}",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/admin/reject-photo/1",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "admin",
-                                "reject-photo",
-                                "1"
-                            ]
-                        }
-                    },
-                    "response": []
+                    }
                 }
-            ],
-            "auth": {
-                "type": "bearer",
-                "bearer": [
-                    {
-                        "key": "token",
-                        "value": "{{authToken}}",
-                        "type": "string"
-                    }
-                ]
-            },
-            "event": [
+            ]
+        },
+        {
+            "name": "Likes",
+            "item": [
                 {
-                    "listen": "prerequest",
-                    "script": {
-                        "type": "text/javascript",
-                        "exec": [
-                            ""
-                        ]
+                    "name": "Toggle Like",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{authToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "url": {
+                            "raw": "{{baseUrl}}/like/1",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "like",
+                                "1"
+                            ]
+                        }
                     }
                 },
                 {
-                    "listen": "test",
-                    "script": {
-                        "type": "text/javascript",
-                        "exec": [
-                            ""
-                        ]
+                    "name": "Get Current User Like IDs",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{authToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/like/list",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "like",
+                                "list"
+                            ]
+                        }
                     }
                 }
             ]
