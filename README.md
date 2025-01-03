@@ -108,3 +108,7 @@ The API will be available at:
 ## Testing the API
 
 A Postman collection file (`Dating Course.postman_collection.json`) is provided in the repository for testing all available endpoints, including authentication, user management, profile operations, and image management features.
+
+## Frontend Requirements
+
+To use this API with the frontend application, you will need to set up the Dating Course Web Client. You can find the frontend repository here: [Dating Course Web Client](https://github.com/JorgeRiveraMancilla/dating-course-web-client)
