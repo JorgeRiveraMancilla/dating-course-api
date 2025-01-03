@@ -103,7 +103,7 @@ app.UseRouting();
 app.UseCors(x =>
     x.AllowAnyHeader()
         .AllowAnyMethod()
-        .WithOrigins("https://dating-course-web-client.netlify.app")
+        .WithOrigins("https://dating-course-web-client.netlify.app", "http://localhost:4200")
         .AllowCredentials()
 );
 
