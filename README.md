@@ -40,10 +40,10 @@ Follow these steps to get the project up and running on your local machine:
 ### 1. Clone the Repository
 
 ```bash
-Clone the project
+# Clone the project
 git clone https://github.com/JorgeRiveraMancilla/dating-course-api.git
 
-Navigate to the project directory
+# Navigate to the project directory
 cd dating-course-api
 ```
 
@@ -98,6 +98,10 @@ docker compose up -d
 ### 4. Run the Application
 
 ```bash
+# Restore dependencies
+dotnet restore
+
+# Run the application
 dotnet run
 ```
 
@@ -107,7 +111,7 @@ The API will be available at:
 
 ## Testing the API
 
-A Postman collection file (`Dating Course.postman_collection.json`) is provided in the repository for testing all available endpoints, including authentication, user management, profile operations, and image management features.
+A Postman collection file (`Dating Course.postman_collection.json`) is provided in the repository for testing all available endpoints.
 
 ## Frontend Requirements
 
